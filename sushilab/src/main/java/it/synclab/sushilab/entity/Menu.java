@@ -9,6 +9,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,9 +26,11 @@ public class Menu {
     private String nome;
     @OneToMany(mappedBy = "menu", orphanRemoval=true, cascade = {CascadeType.ALL})
     @Setter(value = AccessLevel.NONE)
+    //@JsonManagedReference(value = "sezionePreviewReference")
     private List<SezionePreview> menu;
     @OneToMany(mappedBy = "menu", orphanRemoval=true, cascade = {CascadeType.ALL})
     @Setter(value = AccessLevel.NONE)
+    //@JsonManagedReference(value = "fasceReference")
     private List<FasciaOraria> fasce;
 
     public void setMenu(List<SezionePreview> menu){

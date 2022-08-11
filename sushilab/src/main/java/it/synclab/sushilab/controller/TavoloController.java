@@ -13,6 +13,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+
+
+import it.synclab.sushilab.entity.IdToken;
+import it.synclab.sushilab.entity.Menu;
+import it.synclab.sushilab.entity.Session;
+import it.synclab.sushilab.entity.Utente;
 import it.synclab.sushilab.service.ClientService;
 import it.synclab.sushilab.utility.Utility;
 
@@ -26,7 +32,7 @@ public class TavoloController {
     /*  Crea Sessione POST http:/localhost:3000/tavolo   */
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> createSession(){
+    public ResponseEntity<String> creaSessione(){
         //Generate random value
         String value = Utility.generateString(7, 7, true, true, true);
         //Check if already exists
@@ -47,20 +53,33 @@ public class TavoloController {
 
     /* Ottieni Sessione GET http:/localhost:3000/tavolo{idTavolo} Manca il ritorno del menù*/
     @GetMapping(path = "{idTavolo}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> getSession(@PathVariable String idTavolo){
-        //Check if exists
+    public ResponseEntity<String> ottieniSessione(@PathVariable String idTavolo){
+        //Verifico se la sessione esiste
         boolean exist = clienteService.existSessionCode(idTavolo);
         if(!exist)
             return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
-        JSONObject body = new JSONObject();
-        body.put("tavolo", 1);
+        //Ricevo il menù dell'orario giusto
+        Menu menu = clienteService.riceviMenu();
+        if(menu == null) 
+            return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
+        //Elimino ridondanze e ricorsione infinita
+        for(int i = 0; i < menu.getFasce().size(); i++){
+            menu.getFasce().get(i).setMenu(null);
+        }
+        for(int i = 0; i < menu.getMenu().size(); i++){
+            menu.getMenu().get(i).setMenu(null);
+            for (int j = 0; j < menu.getMenu().get(i).getPiatti().size(); j++){
+                menu.getMenu().get(i).getPiatti().get(j).setSezionePreview(null);
+            }
+        }
+        JSONObject body = new JSONObject(menu);
         return new ResponseEntity<String>(body.toString(), HttpStatus.OK);
     }
     /*--------------------------------------------------- */
 
     /* Chiudi Sessione DELETE http:/localhost:3000/tavolo{idTavolo} */
     @DeleteMapping(path = "{idTavolo}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> deleteSession(@PathVariable String idTavolo){
+    public ResponseEntity<String> chiudiSessione(@PathVariable String idTavolo){
         //Check if exists
         boolean exist = clienteService.existSessionCode(idTavolo);
         if(!exist)

@@ -23,7 +23,7 @@ public class LoginController {
     @Autowired
     private ClientService clienteService;
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> loginUtente(@RequestBody String param){
+    public ResponseEntity<String> eseguiLogin(@RequestBody String param){
         JSONObject body = new JSONObject(param);
         if(!body.has("email") || !body.has("password"))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);

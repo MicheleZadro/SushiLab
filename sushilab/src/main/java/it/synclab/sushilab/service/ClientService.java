@@ -12,11 +12,14 @@ import it.synclab.sushilab.constants.Constants;
 import it.synclab.sushilab.entity.Utente;
 import it.synclab.sushilab.entity.Code;
 import it.synclab.sushilab.entity.IdToken;
+import it.synclab.sushilab.entity.Menu;
 import it.synclab.sushilab.entity.Session;
 import it.synclab.sushilab.repository.ClientRepository;
 import it.synclab.sushilab.repository.CodeRepository;
 import it.synclab.sushilab.repository.IdTokenRepository;
+import it.synclab.sushilab.repository.MenuRepository;
 import it.synclab.sushilab.repository.SessionRepository;
+import it.synclab.sushilab.utility.Utility;
 
 @Service
 @Transactional
@@ -30,6 +33,8 @@ public class ClientService{
     CodeRepository codeRepository;
     @Autowired
     SessionRepository sessionRepository;
+    @Autowired
+    MenuRepository menuRepository;
 
     
     public List<Utente> getAllClients() {
@@ -122,6 +127,24 @@ public class ClientService{
         if(idTokenRepository.findById(idPersona).get().getCliente().getIsGestore())
             return true;
         return false;
+    }
+
+    public Menu riceviMenu(){
+        List<Menu> menu = menuRepository.findAll();
+        if(menu == null) return null;
+        for(int i = 0; i < menu.size(); i++){
+            for(int j = 0; j < menu.get(i).getFasce().size(); j++){
+                String giorno = menu.get(i).getFasce().get(j).getGiorno();
+                int oraInizio = menu.get(i).getFasce().get(j).getOraInizio();
+                int oraFine = menu.get(i).getFasce().get(j).getOraFine();
+                if(Utility.verifyDate(giorno, oraInizio, oraFine)) {
+                    Menu rtrn = menu.get(i);
+                    
+                    return rtrn;
+                }
+            }
+        }
+        return null;
     }
     
 }

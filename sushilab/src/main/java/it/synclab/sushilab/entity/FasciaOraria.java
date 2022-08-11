@@ -7,25 +7,42 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
+
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Entity
 @Data
+@Entity
 @AllArgsConstructor
 @NoArgsConstructor
 public class FasciaOraria {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
     private String giorno;
+
     private int oraInizio;
+
     private int oraFine;
-    @JsonIgnore
+
     @ManyToOne
     @JoinColumn(name = "menu", referencedColumnName = "id")
+    @Getter(value = AccessLevel.NONE)
+    //@JsonIgnore
+    //@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    //@JsonBackReference(value = "fasceReference")
     private Menu menu;
+
+    //@JsonIgnore
+    public Menu getMenu() {
+        return menu;
+    }
+
+    
+    
 }
