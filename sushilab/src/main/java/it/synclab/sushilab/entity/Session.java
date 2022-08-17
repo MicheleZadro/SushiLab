@@ -2,6 +2,7 @@ package it.synclab.sushilab.entity;
 
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -19,6 +20,6 @@ public class Session {
     @Id
     @Column(name = "id_table")
     private String idTable;
-    @OneToMany(mappedBy = "email")
+    @OneToMany(mappedBy = "tavolo")
     private List<Utente> clienti;
 }

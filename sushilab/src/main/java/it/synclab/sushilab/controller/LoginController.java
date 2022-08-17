@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import it.synclab.sushilab.entity.Utente;
 import it.synclab.sushilab.service.ClientService;
+import it.synclab.sushilab.utility.Utility;
 
 
 
@@ -23,28 +24,19 @@ public class LoginController {
     @Autowired
     private ClientService clienteService;
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> eseguiLogin(@RequestBody String param){
-        JSONObject body = new JSONObject(param);
-        if(!body.has("email") || !body.has("password"))
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        Utente client = new Utente();
-        client.setEmail(body.getString("email"));
-        client.setPassword(body.getString("password"));
-        if(clienteService.login(client)) {
-            RandomStringGenerator randomStringGenerator = new RandomStringGenerator.Builder()
-                .withinRange('0', '9')
-                .filteredBy(/*CharacterPredicates.LETTERS, */CharacterPredicates.DIGITS)
-                .build();
+    public ResponseEntity<String> eseguiLogin(@RequestBody Utente utente){
+        if(clienteService.login(utente)) {
             //Genera valori
-            Long expiresIn = Long.parseLong(randomStringGenerator.generate(10));
-            String idToken = randomStringGenerator.generate(18);
+            Long expiresIn = Long.parseLong(Utility.generateString(10, 10, true, false, false));
+            String idToken = Utility.generateString(18, 18, true, false, false);
             //Verifica se sono già presenti nel database, se non ci sono li inserisce
-            boolean insert_value = clienteService.insertIdToken(client, idToken);
+            
+            boolean insert_value = clienteService.insertIdToken(utente, idToken);
             while(insert_value == false){
-                expiresIn = Long.parseLong(randomStringGenerator.generate(10));
-                idToken = randomStringGenerator.generate(18);
+                expiresIn = Long.parseLong(Utility.generateString(10, 10, true, false, false));
+                idToken = Utility.generateString(18, 18, true, false, false);
                 //Verifica se sono già presenti nel database, se non ci sono li inserisce
-                insert_value = clienteService.insertIdToken(client, idToken);
+                insert_value = clienteService.insertIdToken(utente, idToken);
             }
             JSONObject rtrnObject = new JSONObject();
             rtrnObject.put("expiresIn", expiresIn);

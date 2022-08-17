@@ -1,10 +1,14 @@
 package it.synclab.sushilab.entity;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
+
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -25,11 +29,11 @@ public class Utente{
     @JsonProperty("isGestore")
     private Boolean isGestore = false;
     @JsonIgnore
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(referencedColumnName = "id_token")
     private IdToken idPersona = null;
     @JsonIgnore
-    @OneToOne
-    @JoinColumn(referencedColumnName = "id_table")
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(referencedColumnName = "id_table", nullable = true)
     private Session tavolo = null;
 }

@@ -33,11 +33,11 @@ public class GestoreController {
         //Verifico idPersona corrisponde a un gestore
         if(!clienteService.isGestore(idPersona))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        try {
+        //try {
             gestoreService.inserisciPiattoUpload(piattoUpload);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
+        //} catch (Exception e) {
+           // return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        //}
         return new ResponseEntity<>(HttpStatus.OK);
     }
     
