@@ -2,10 +2,12 @@ package it.synclab.sushilab.entity;
 
 import java.util.List;
 
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
 import lombok.AllArgsConstructor;
@@ -15,8 +17,13 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrdineDettaglio {
-    private Piatto piatto;
-    private int molteplicità;
-    private List<String> note;
+@Entity
+public class Blacklist {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+    @OneToOne
+    @JoinColumn
+    private Utente utente;
+    @ElementCollection(targetClass=String.class)
+    private List<String> ingredienti;
 }

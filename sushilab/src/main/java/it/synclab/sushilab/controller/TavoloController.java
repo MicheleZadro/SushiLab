@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 import it.synclab.sushilab.entity.IdToken;
+import it.synclab.sushilab.entity.InArrivo;
 import it.synclab.sushilab.entity.ListaOrdini;
 import it.synclab.sushilab.entity.Menu;
 import it.synclab.sushilab.entity.Ordine;
@@ -27,6 +28,7 @@ import it.synclab.sushilab.entity.Utente;
 import it.synclab.sushilab.service.ClientService;
 import it.synclab.sushilab.utility.Utility;
 import it.synclab.sushilab.entity.ListaOrdineDettaglio;
+import it.synclab.sushilab.entity.ListaOrdineDettaglioTavolo;
 
 @RestController
 @RequestMapping(value = "tavolo")
@@ -93,14 +95,25 @@ public class TavoloController {
         return new ResponseEntity<String>(HttpStatus.OK);
     }
 
-    /* Modifica ordine di una persona POST http://localhost:3000/tavolo/{idTavolo}/persona/{idPersona} */
+    /* Ottieni ordini di una persona Get http://localhost:3000/tavolo/{idTavolo}/persona/{idPersona} */
     @GetMapping(path = "{idTavolo}/persona/{idPersona}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> ottieniOrdiniPersona(@PathVariable String idTavolo, @PathVariable String idPersona){
-        List<OrdineDettaglio> personali = clienteService.ottieniOrdini(idPersona, idTavolo);
+        List<OrdineDettaglio> personali = clienteService.ottieniOrdiniPersonali(idPersona, idTavolo);
         if(personali == null) return new ResponseEntity<>(HttpStatus.METHOD_NOT_ALLOWED);
         ListaOrdineDettaglio listaOrdineDettaglio = new ListaOrdineDettaglio(personali);
         JSONObject json = new JSONObject(listaOrdineDettaglio);
         System.out.println(listaOrdineDettaglio);
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+    }
+
+    /* Ottieni ordini di una tavolo Get http://localhost:3000/tavolo/{idTavolo}/persona/{idPersona}/ordini */
+    @GetMapping(path = "{idTavolo}/persona/{idPersona}/ordini", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> ottieniOrdiniTavolo(@PathVariable String idTavolo, @PathVariable String idPersona){
+        List<OrdineDettaglio> ordini = clienteService.ottieniOrdiniTavolo(idPersona, idTavolo);
+        if(ordini == null) return new ResponseEntity<>(HttpStatus.METHOD_NOT_ALLOWED);
+        ListaOrdineDettaglioTavolo listaOrdineDettaglioTavolo = new ListaOrdineDettaglioTavolo(ordini);
+        JSONObject json = new JSONObject(listaOrdineDettaglioTavolo);
+        //System.out.println(listaOrdineDettaglio);
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
@@ -112,6 +125,22 @@ public class TavoloController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    /* Sposta gli ordini a in arrivo POST http://localhost:3000/tavolo/{idTavolo}/inarrivo */
+    @PostMapping(path = "{idTavolo}/inarrivo")
+    public ResponseEntity<String> spostaGliOrdiniInArrivo(@PathVariable String idTavolo){
+        if(!clienteService.spostaGliOrdiniInArrivo(idTavolo)) return new ResponseEntity<>(HttpStatus.METHOD_NOT_ALLOWED);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
+    /* Ottieni gli ordini in arrivo Get http://localhost:3000/tavolo/{idTavolo}/inarrivo */
+    @GetMapping(path = "{idTavolo}/inarrivo/{idPersona}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> ottieniGliOrdiniInArrivo(@PathVariable String idTavolo, @PathVariable String idPersona){
+        List<OrdineDettaglio> list = clienteService.ottieniGliOrdiniInArrivo(idTavolo, idPersona);
+        if(list == null) return new ResponseEntity<>(HttpStatus.METHOD_NOT_ALLOWED);
+        InArrivo inArrivo = new InArrivo(list);
+        JSONObject json = new JSONObject(inArrivo);
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+    }
+       
 
 }

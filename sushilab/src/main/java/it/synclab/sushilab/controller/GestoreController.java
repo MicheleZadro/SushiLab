@@ -1,5 +1,7 @@
 package it.synclab.sushilab.controller;
 
+import java.util.List;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import it.synclab.sushilab.entity.ListaMenu;
+import it.synclab.sushilab.entity.ListaPiatti;
 import it.synclab.sushilab.entity.Menu;
 import it.synclab.sushilab.entity.PiattoUpload;
 import it.synclab.sushilab.service.ClientService;
@@ -109,6 +113,19 @@ public class GestoreController {
         }
     }
 
+    /* Ottieni Lista Piatti */
+    @GetMapping(path = "{idPersona}/piatti", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> ottieniListaPiatti(@PathVariable String idPersona){
+        //Verifico idPersona corrisponde a un gestore
+        if(!clienteService.isGestore(idPersona)) return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        //Ricevo lista piatti
+        ListaPiatti listaPiatti = gestoreService.ottieniListaPiatti();
+        JSONObject json = new JSONObject(listaPiatti);
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+    }
+
+
+
     /* Nuovo Menu */
     @PostMapping(path = "{idPersona}/menu", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> nuovoMenu(@PathVariable String idPersona, @RequestBody String name){
@@ -170,4 +187,17 @@ public class GestoreController {
         if(!gestoreService.eliminaMenu(id)) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    /* Ottieni lista menù */
+    @GetMapping(path = "{idPersona}/menu", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> ottieniListaMenu(@PathVariable String idPersona){
+        //Verifico idPersona corrisponde a un gestore
+        if(!clienteService.isGestore(idPersona))
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        ListaMenu menu = gestoreService.ottieniListaMenu();
+        JSONObject json = new JSONObject(menu);
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+        
+    }
+
 }

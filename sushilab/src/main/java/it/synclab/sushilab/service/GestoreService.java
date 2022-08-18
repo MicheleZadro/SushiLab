@@ -1,13 +1,21 @@
 package it.synclab.sushilab.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import it.synclab.sushilab.entity.FasciaOraria;
+import it.synclab.sushilab.entity.ListaMenu;
+import it.synclab.sushilab.entity.ListaPiatti;
 import it.synclab.sushilab.entity.Menu;
+import it.synclab.sushilab.entity.MenuRidotto;
+import it.synclab.sushilab.entity.PiattoPreview;
 import it.synclab.sushilab.entity.PiattoUpload;
 import it.synclab.sushilab.repository.MenuRepository;
+import it.synclab.sushilab.repository.PiattoPreviewRepository;
 import it.synclab.sushilab.repository.PiattoUploadRepository;
 
 @Service
@@ -17,6 +25,8 @@ public class GestoreService {
     MenuRepository menuRepository;
     @Autowired
     PiattoUploadRepository piattoUploadRepository;
+    @Autowired
+    PiattoPreviewRepository piattoPreviewRepository;
 
     /* Metodi Piatto Upload */
     
@@ -86,6 +96,23 @@ public class GestoreService {
         if(!menuRepository.existsById(id)) return false;
         menuRepository.deleteById(id);
         return true;
+    }
+
+    public ListaMenu ottieniListaMenu(){
+        List<Menu> menu = menuRepository.findAll();
+        List<MenuRidotto> listMenuRidotto = new ArrayList<>();
+        for(int i = 0; i < menu.size(); i++){
+            MenuRidotto menuRidotto = new MenuRidotto(menu.get(i).getId(), menu.get(i).getNome());
+            listMenuRidotto.add(menuRidotto);
+        }
+        ListaMenu listaMenu = new ListaMenu(listMenuRidotto);
+        return listaMenu;
+    }
+
+    public ListaPiatti ottieniListaPiatti(){
+        List<PiattoPreview> piatti = piattoPreviewRepository.findAll();
+        ListaPiatti listaPiatti = new ListaPiatti(piatti);
+        return listaPiatti;
     }
 
     

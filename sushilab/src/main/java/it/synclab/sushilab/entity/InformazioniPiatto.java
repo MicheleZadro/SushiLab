@@ -1,7 +1,5 @@
 package it.synclab.sushilab.entity;
 
-import java.util.List;
-
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -17,22 +15,20 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Entity
-@AllArgsConstructor
 @NoArgsConstructor
-public class Ordine {
+@AllArgsConstructor
+public class InformazioniPiatto {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    private int idPiatto;
-    private int count;
-    private String note;
     @JsonIgnore
     @OneToOne
     @JoinColumn
-    private IdToken idPersona;
+    private Utente utente;
     @JsonIgnore
     @OneToOne
     @JoinColumn
-    private Session idTavolo;
-    @JsonIgnore
-    private boolean inarrivo = false;
+    private PiattoUpload piatto;
+    private boolean preferito;
+    private int valutazione;
+    private String ultimoOrdine;
 }
