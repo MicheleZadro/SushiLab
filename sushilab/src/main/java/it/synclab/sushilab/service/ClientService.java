@@ -3,8 +3,6 @@ package it.synclab.sushilab.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.text.CharacterPredicates;
-import org.apache.commons.text.RandomStringGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +17,6 @@ import it.synclab.sushilab.entity.IdToken;
 import it.synclab.sushilab.entity.InformazioniPiatto;
 import it.synclab.sushilab.entity.Ingredienti;
 import it.synclab.sushilab.entity.ListaOrdineMerge;
-import it.synclab.sushilab.entity.ListaOrdini;
 import it.synclab.sushilab.entity.Menu;
 import it.synclab.sushilab.entity.Ordine;
 import it.synclab.sushilab.entity.OrdineDettaglio;
@@ -31,7 +28,6 @@ import it.synclab.sushilab.entity.PiattoPreview;
 import it.synclab.sushilab.entity.Session;
 import it.synclab.sushilab.entity.Sezione;
 import it.synclab.sushilab.entity.SezionePreview;
-import it.synclab.sushilab.entity.InformazioniPiatto;
 import it.synclab.sushilab.repository.BlacklistRepository;
 import it.synclab.sushilab.repository.ClientRepository;
 import it.synclab.sushilab.repository.CodeRepository;
@@ -112,19 +108,20 @@ public class ClientService{
     }
 
     
-    public boolean recover(String email) {
+    public boolean recuperoPassword(String email) {
         //Cerco cliente già registrato nel database
         Boolean existClient = clientRepository.existsById(email);
         //Se non ho trovato il cliente non esiste quindi ritorno 0
         if(!existClient)
             return false;
         //Genero il codice
-        RandomStringGenerator randomStringGenerator = new RandomStringGenerator.Builder()
+        /*RandomStringGenerator randomStringGenerator = new RandomStringGenerator.Builder()
                 .withinRange('0', 'Z')
                 .filteredBy(CharacterPredicates.LETTERS, CharacterPredicates.DIGITS)
-                .build();
-        String s = randomStringGenerator.generate(Constants.codeLength);
-        codeRepository.save(new Code(email, s, false));
+                .build();*/
+        String code = Utility.generateString(Constants.recoverCodeLength, Constants.recoverCodeLength, true, false, true);
+        //String s = randomStringGenerator.generate(Constants.recoverCodeLength);
+        codeRepository.save(new Code(email, code, false));
         return true;
     }
 
@@ -132,9 +129,11 @@ public class ClientService{
     public boolean verify(String code) {
         if(codeRepository.findByCode(code) == null)
             return false;
+        Code c = codeRepository.findByCode(code);
+        c.setVerify(true);
+        codeRepository.save(c);
         return true;
     }
-    /*Da modificare: il fatto che alla creazione della sessione deve già inserirci dentro l'host */
     
     /* Metodo per creare sessione */
     public boolean insertSessionCode(String code, String idPersona) {
@@ -242,8 +241,6 @@ public class ClientService{
         for(int i = 0; i < lista_2.size(); i++){
             if(lista_2.get(i).getIdPersona().getIdToken().compareTo(idPersona)==0) lista.add(lista_2.get(i));
         }
-        //System.out.println(lista);
-        if(lista == null) return null;
         List<OrdineDettaglio> lista_dettaglio = new ArrayList<>();
         for(int i = 0; i < lista.size(); i++){
             PiattoUpload piattoUpload = null;
@@ -297,7 +294,6 @@ public class ClientService{
         for(int i = 0; i < lista_2.size(); i++){
             if(lista_2.get(i).getIdTavolo().getIdTable().compareTo(idTavolo)!=0) lista_2.remove(lista_2.get(i));
         }
-        if(lista_2 == null) return null;
         List<OrdineDettaglio> lista_dettaglio = new ArrayList<>();
         for(int i = 0; i < lista_2.size(); i++){
             Piatto piatto = ottienPiatto(idPersona, lista_2.get(i).getIdPiatto(), false);
@@ -398,7 +394,6 @@ public class ClientService{
         List<Ordine> list = ordineRepository.findAll();
         List<OrdineDettaglio> list_dettaglio = ottieniOrdiniPersonali(idPersona, idTavolo);
         if(list_dettaglio == null || list == null) return null;
-        boolean removed = false;
         for(int i = 0; i < list.size(); i++){
             for(int j = 0; j < list_dettaglio.size(); j++){
                 if(list_dettaglio.get(j).getPiatto().getId() == list.get(i).getIdPiatto() && !list.get(i).isInarrivo()){

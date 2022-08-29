@@ -37,25 +37,6 @@ public class UtenteController {
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 
-    /* Registra utente POST http://localhost:3000/utente */
-    // @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    // public ResponseEntity<String> registraUtente(@RequestBody String param){
-    //     JSONObject body = new JSONObject(param);
-    //     if(!body.has("email") || !body.has("password"))
-    //         return new ResponseEntity<>(HttpStatus.CONFLICT);
-    //     Utente client = new Utente();
-    //     if(!body.has("isGestore")){
-    //         client.setEmail(body.getString("email"));
-    //         client.setPassword(body.getString("password"));
-    //     }
-    //     else{
-    //         client.setEmail(body.getString("email"));
-    //         client.setPassword(body.getString("password"));
-    //         client.setIsGestore(body.getBoolean("isGestore"));
-    //     }
-    //     if(clienteService.insert(client)) return new ResponseEntity<>(HttpStatus.OK);
-    //     return new ResponseEntity<>(HttpStatus.CONFLICT);
-    // }
     /* Registra Utente POST http://localhost:3000/utente */
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> registraUtente(@RequestBody Utente utente){
@@ -93,7 +74,7 @@ public class UtenteController {
         JSONObject body = new JSONObject(param);
         if(!body.has("email"))
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        if(clienteService.recover(body.getString("email")))
+        if(clienteService.recuperoPassword(body.getString("email")))
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -119,8 +100,7 @@ public class UtenteController {
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
-        }
-        
+        }   
     }
 
     /* Aggiorna blacklist POST http://localhost:3000/utente/{idPersona}/blacklist */

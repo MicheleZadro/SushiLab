@@ -17,19 +17,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
+import it.synclab.sushilab.constants.Constants;
 import it.synclab.sushilab.entity.InArrivo;
 import it.synclab.sushilab.entity.ListaOrdini;
 import it.synclab.sushilab.entity.Menu;
 import it.synclab.sushilab.entity.MenuCompatto;
 import it.synclab.sushilab.entity.MenuCompattoSessione;
-import it.synclab.sushilab.entity.Ordine;
 import it.synclab.sushilab.entity.OrdineDettaglio;
 import it.synclab.sushilab.service.ClientService;
 import it.synclab.sushilab.utility.Utility;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import it.synclab.sushilab.entity.ListaOrdineDettaglio;
 import it.synclab.sushilab.entity.ListaOrdineDettaglioTavolo;
 import it.synclab.sushilab.entity.ListaOrdineMerge;
@@ -45,7 +41,7 @@ public class TavoloController {
     @PostMapping(path = "persona/{idPersona}" ,produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> creaSessione(@PathVariable String idPersona){
         //Generate random value
-        String value = Utility.generateString(7, 7, true, true, true);
+        String value = Utility.generateString(Constants.sessionCodeLength, Constants.sessionCodeLength, true, Constants.sessionLetters, Constants.sessionLetters);
         //Check if already exists
         boolean rtrn = false;
         int count = 0;
