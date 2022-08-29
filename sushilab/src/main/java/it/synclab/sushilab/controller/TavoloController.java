@@ -17,18 +17,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import it.synclab.sushilab.classes.InArrivo;
+import it.synclab.sushilab.classes.ListaOrdineDettaglio;
+import it.synclab.sushilab.classes.ListaOrdineDettaglioTavolo;
+import it.synclab.sushilab.classes.ListaOrdineMerge;
+import it.synclab.sushilab.classes.ListaOrdini;
+import it.synclab.sushilab.classes.MenuCompatto;
+import it.synclab.sushilab.classes.MenuCompattoSessione;
+import it.synclab.sushilab.classes.OrdineDettaglio;
 import it.synclab.sushilab.constants.Constants;
-import it.synclab.sushilab.entity.InArrivo;
-import it.synclab.sushilab.entity.ListaOrdini;
 import it.synclab.sushilab.entity.Menu;
-import it.synclab.sushilab.entity.MenuCompatto;
-import it.synclab.sushilab.entity.MenuCompattoSessione;
-import it.synclab.sushilab.entity.OrdineDettaglio;
 import it.synclab.sushilab.service.ClientService;
 import it.synclab.sushilab.utility.Utility;
-import it.synclab.sushilab.entity.ListaOrdineDettaglio;
-import it.synclab.sushilab.entity.ListaOrdineDettaglioTavolo;
-import it.synclab.sushilab.entity.ListaOrdineMerge;
 
 @RestController
 @RequestMapping(value = "tavolo")

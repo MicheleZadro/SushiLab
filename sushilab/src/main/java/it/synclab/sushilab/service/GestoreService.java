@@ -7,11 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import it.synclab.sushilab.classes.ListaMenu;
+import it.synclab.sushilab.classes.ListaPiatti;
+import it.synclab.sushilab.classes.MenuRidotto;
 import it.synclab.sushilab.entity.FasciaOraria;
-import it.synclab.sushilab.entity.ListaMenu;
-import it.synclab.sushilab.entity.ListaPiatti;
 import it.synclab.sushilab.entity.Menu;
-import it.synclab.sushilab.entity.MenuRidotto;
 import it.synclab.sushilab.entity.PiattoPreview;
 import it.synclab.sushilab.entity.PiattoUpload;
 import it.synclab.sushilab.repository.MenuRepository;

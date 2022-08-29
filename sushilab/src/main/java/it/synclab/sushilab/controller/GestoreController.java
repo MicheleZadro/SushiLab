@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import it.synclab.sushilab.entity.ListaMenu;
-import it.synclab.sushilab.entity.ListaPiatti;
+import it.synclab.sushilab.classes.ListaMenu;
+import it.synclab.sushilab.classes.ListaPiatti;
 import it.synclab.sushilab.entity.Menu;
 import it.synclab.sushilab.entity.PiattoUpload;
 import it.synclab.sushilab.service.ClientService;

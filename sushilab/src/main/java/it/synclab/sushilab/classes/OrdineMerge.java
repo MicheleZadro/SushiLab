@@ -1,4 +1,4 @@
-package it.synclab.sushilab.entity;
+package it.synclab.sushilab.classes;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

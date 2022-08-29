@@ -7,26 +7,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import it.synclab.sushilab.classes.ArraySezione;
+import it.synclab.sushilab.classes.Fasce;
+import it.synclab.sushilab.classes.Ingredienti;
+import it.synclab.sushilab.classes.ListaOrdineMerge;
+import it.synclab.sushilab.classes.OrdineDettaglio;
+import it.synclab.sushilab.classes.OrdineMerge;
+import it.synclab.sushilab.classes.Piatto;
+import it.synclab.sushilab.classes.Preferiti;
+import it.synclab.sushilab.classes.Sezione;
 import it.synclab.sushilab.constants.Constants;
 import it.synclab.sushilab.entity.Utente;
-import it.synclab.sushilab.entity.ArraySezione;
 import it.synclab.sushilab.entity.Blacklist;
 import it.synclab.sushilab.entity.Code;
-import it.synclab.sushilab.entity.Fasce;
 import it.synclab.sushilab.entity.IdToken;
 import it.synclab.sushilab.entity.InformazioniPiatto;
-import it.synclab.sushilab.entity.Ingredienti;
-import it.synclab.sushilab.entity.ListaOrdineMerge;
 import it.synclab.sushilab.entity.Menu;
 import it.synclab.sushilab.entity.Ordine;
-import it.synclab.sushilab.entity.OrdineDettaglio;
-import it.synclab.sushilab.entity.OrdineMerge;
-import it.synclab.sushilab.entity.Piatto;
 import it.synclab.sushilab.entity.PiattoUpload;
-import it.synclab.sushilab.entity.Preferiti;
 import it.synclab.sushilab.entity.PiattoPreview;
 import it.synclab.sushilab.entity.Session;
-import it.synclab.sushilab.entity.Sezione;
 import it.synclab.sushilab.entity.SezionePreview;
 import it.synclab.sushilab.repository.BlacklistRepository;
 import it.synclab.sushilab.repository.ClientRepository;
@@ -119,6 +119,11 @@ public class ClientService{
                 .withinRange('0', 'Z')
                 .filteredBy(CharacterPredicates.LETTERS, CharacterPredicates.DIGITS)
                 .build();*/
+        //Elimino le istanze di login dell'utente
+        String idToken = clientRepository.findById(email).get().getIdPersona().getIdToken();
+        clientRepository.findById(email).get().setIdPersona(null);
+        clientRepository.findById(email).get().setTavolo(null);
+        idTokenRepository.deleteById(idToken);
         String code = Utility.generateString(Constants.recoverCodeLength, Constants.recoverCodeLength, true, false, true);
         //String s = randomStringGenerator.generate(Constants.recoverCodeLength);
         codeRepository.save(new Code(email, code, false));

@@ -1,4 +1,4 @@
-package it.synclab.sushilab.entity;
+package it.synclab.sushilab.classes;
 
 import java.util.List;
 
@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Fasce {
-    private List<FasciaOraria> fasce;
+public class ArraySezione {
+    private List<Sezione> menu;
 }

@@ -1,6 +1,6 @@
-package it.synclab.sushilab.entity;
+package it.synclab.sushilab.classes;
 
-import java.util.List;  
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

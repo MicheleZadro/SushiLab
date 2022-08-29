@@ -1,7 +1,8 @@
-package it.synclab.sushilab.entity;
+package it.synclab.sushilab.classes;
 
 import java.util.List;
 
+import it.synclab.sushilab.entity.PiattoPreview;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,6 +10,6 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ListaMenu {
-    private List<MenuRidotto> list;
+public class ListaPiatti {
+    private List<PiattoPreview> piatti;
 }

@@ -1,6 +1,4 @@
-package it.synclab.sushilab.entity;
-
-import java.util.List;
+package it.synclab.sushilab.classes;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,6 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Ingredienti {
-    private List<String> ingredienti;
+public class MenuRidotto {
+    private int id;
+    private String nome;
 }

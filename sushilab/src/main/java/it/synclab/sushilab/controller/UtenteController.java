@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import it.synclab.sushilab.entity.Ingredienti;
+import it.synclab.sushilab.classes.Ingredienti;
 import it.synclab.sushilab.entity.Utente;
 import it.synclab.sushilab.service.ClientService;
 
@@ -74,7 +74,7 @@ public class UtenteController {
         JSONObject body = new JSONObject(param);
         if(!body.has("email"))
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        if(clienteService.recuperoPassword(body.getString("email")))
+        if(!clienteService.recuperoPassword(body.getString("email")))
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -85,7 +85,7 @@ public class UtenteController {
         JSONObject body = new JSONObject(param);
         if(!body.has("code"))
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        if(clienteService.verify(body.getString("code")))
+        if(!clienteService.verify(body.getString("code")))
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         return new ResponseEntity<>(HttpStatus.OK);
     }

@@ -13,10 +13,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import it.synclab.sushilab.entity.ArraySezione;
-import it.synclab.sushilab.entity.Fasce;
+import it.synclab.sushilab.classes.ArraySezione;
+import it.synclab.sushilab.classes.Fasce;
+import it.synclab.sushilab.classes.Preferiti;
 import it.synclab.sushilab.entity.FasciaOraria;
-import it.synclab.sushilab.entity.Preferiti;
 import it.synclab.sushilab.service.ClientService;
 
 @RestController
