@@ -132,6 +132,13 @@ public class GestoreService {
         if (fasciaOraria.getOraFine() < fasciaOraria.getOraInizio()) return false;
         return true;
     }
+
+
+    public Menu riceviMenu(int idMenu) {
+        if(!menuRepository.existsById(idMenu)) return null;
+        Menu menu = menuRepository.findById(idMenu).get();
+        return menu;
+    }
     
     
 

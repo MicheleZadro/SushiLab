@@ -24,55 +24,59 @@ import it.synclab.sushilab.service.ClientService;
 public class UtenteController {
     @Autowired
     private ClientService clienteService;
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> registraUtente(@RequestBody String param){
-        JSONObject body = new JSONObject(param);
-        if(!body.has("email") || !body.has("password"))
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
-        Utente client = new Utente();
-        if(!body.has("isGestore")){
-            client.setEmail(body.getString("email"));
-            client.setPassword(body.getString("password"));
-        }
-        else{
-            client.setEmail(body.getString("email"));
-            client.setPassword(body.getString("password"));
-            client.setIsGestore(body.getBoolean("isGestore"));
-        }
-        if(clienteService.insert(client)) return new ResponseEntity<>(HttpStatus.OK);
+    
+    /* Ottieni le informazioni dell'utente GET http://localhost:3000/utente/{idPersona} */
+    @GetMapping(path = "/{idPersona}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> ottieniUtente(@PathVariable String idPersona){
+        Utente utente = clienteService.ottieniUtente(idPersona);
+        if(utente == null) return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        utente.setTavolo(null);
+        utente.setIdPersona(null);
+        //System.out.println(utente);
+        JSONObject json = new JSONObject(utente);
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
+    }
+
+    /* Registra utente POST http://localhost:3000/utente */
+    // @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    // public ResponseEntity<String> registraUtente(@RequestBody String param){
+    //     JSONObject body = new JSONObject(param);
+    //     if(!body.has("email") || !body.has("password"))
+    //         return new ResponseEntity<>(HttpStatus.CONFLICT);
+    //     Utente client = new Utente();
+    //     if(!body.has("isGestore")){
+    //         client.setEmail(body.getString("email"));
+    //         client.setPassword(body.getString("password"));
+    //     }
+    //     else{
+    //         client.setEmail(body.getString("email"));
+    //         client.setPassword(body.getString("password"));
+    //         client.setIsGestore(body.getBoolean("isGestore"));
+    //     }
+    //     if(clienteService.insert(client)) return new ResponseEntity<>(HttpStatus.OK);
+    //     return new ResponseEntity<>(HttpStatus.CONFLICT);
+    // }
+    /* Registra Utente POST http://localhost:3000/utente */
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> registraUtente(@RequestBody Utente utente){
+        if(clienteService.insert(utente)) return new ResponseEntity<>(HttpStatus.OK);
         return new ResponseEntity<>(HttpStatus.CONFLICT);
     }
-    @PostMapping(path = "/code", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> recuperoPassword(@RequestBody String param){
-        JSONObject body = new JSONObject(param);
-        if(!body.has("email"))
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        if(clienteService.recover(body.getString("email")))
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-    @PostMapping(path = "/verifyCode", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> verificaCodice(@RequestBody String param){
-        JSONObject body = new JSONObject(param);
-        if(!body.has("code"))
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        if(clienteService.verify(body.getString("code")))
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
     
-    @PostMapping(path = "/{idPersona}/favorito/{idPiatto}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    /* Modifica stato preferiti POST http://localhost:3000/utente/{idPersona}/favorito/{idPiatto}*/
+    @PostMapping(path = "{idPersona}/favorito/{idPiatto}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> modificaStatoPreferiti(@PathVariable String idPersona, @PathVariable String idPiatto, @RequestBody String param){
         JSONObject json = new JSONObject(param);
         if(!json.has("fav"))
             return new ResponseEntity<>(HttpStatus.METHOD_NOT_ALLOWED);
-        boolean value = json.getBoolean("fav");
-        if(!clienteService.modificaStatoPreferiti(idPersona, Integer.parseInt(idPiatto), value))
+            boolean value = json.getBoolean("fav");
+            if(!clienteService.modificaStatoPreferiti(idPersona, Integer.parseInt(idPiatto), value))
             return new ResponseEntity<>(HttpStatus.METHOD_NOT_ALLOWED);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @PostMapping(path = "/{idPersona}/rate/{idPiatto}", consumes = MediaType.APPLICATION_JSON_VALUE)
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+        
+    /* Modifica valutazione  POST http://localhost:3000/utente/{idPersona}/rate/{idPiatto}*/
+    @PostMapping(path = "{idPersona}/rate/{idPiatto}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> modificaValutazione(@PathVariable String idPersona, @PathVariable String idPiatto, @RequestBody String param){
         JSONObject json = new JSONObject(param);
         if(!json.has("rate"))
@@ -82,22 +86,58 @@ public class UtenteController {
             return new ResponseEntity<>(HttpStatus.METHOD_NOT_ALLOWED);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+    
+    /* Invia email per il recupero della password POST http://localhost:3000/utente/code */
+    @PostMapping(path = "code", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> recuperoPassword(@RequestBody String param){
+        JSONObject body = new JSONObject(param);
+        if(!body.has("email"))
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        if(clienteService.recover(body.getString("email")))
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+    
+    /* Verifica codice recupero password POST http://localhost:3000/utente/verifyCode */
+    @PostMapping(path = "verifyCode", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> verificaCodice(@RequestBody String param){
+        JSONObject body = new JSONObject(param);
+        if(!body.has("code"))
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        if(clienteService.verify(body.getString("code")))
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+    
+    /* Reimposta la password dimenticata POST http://localhost:3000/utente/pass*/
+    @PostMapping(path = "pass", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> reimpostaPassword(@RequestBody String body){
+        try {
+            JSONObject json = new JSONObject(body);
+            if(!json.has("email") || !json.has("newpass")) return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+            if(clienteService.reimpostaPassword(json.getString("email"), json.getString("newpass"))) return new ResponseEntity<>(HttpStatus.OK);
+            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+        }
+        
+    }
 
-    /* Aggiorna BlackList */
-    @PostMapping(path = "/{idPersona}/blacklist", consumes = MediaType.APPLICATION_JSON_VALUE)
+    /* Aggiorna blacklist POST http://localhost:3000/utente/{idPersona}/blacklist */
+    @PostMapping(path = "{idPersona}/blacklist", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> aggiornaBlacklist(@PathVariable String idPersona, @RequestBody Ingredienti ingredienti){
         clienteService.aggiornaBlacklist(idPersona, ingredienti);
         return new ResponseEntity<>(HttpStatus.OK);
     }
-
-
-    /* Ottieni BlackList */
-    @GetMapping(path = "/{idPersona}/blacklist", produces = MediaType.APPLICATION_JSON_VALUE)
+    
+    /* Ottieni la blacklist GET http://localhost:3000/utente/{idPersona}/blacklist*/
+    @GetMapping(path = "{idPersona}/blacklist", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> ottieniBlacklist(@PathVariable String idPersona){
         List<String> list = clienteService.ottieniBlacklist(idPersona);
         if(list == null) 
             return new ResponseEntity<>(HttpStatus.METHOD_NOT_ALLOWED);
         Ingredienti ingredienti = new Ingredienti(list);
-        return new ResponseEntity<>(ingredienti.toString(), HttpStatus.OK);
+        JSONObject json = new JSONObject(ingredienti);
+        return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
 }

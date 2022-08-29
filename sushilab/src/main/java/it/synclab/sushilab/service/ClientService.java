@@ -11,18 +11,26 @@ import org.springframework.transaction.annotation.Transactional;
 
 import it.synclab.sushilab.constants.Constants;
 import it.synclab.sushilab.entity.Utente;
+import it.synclab.sushilab.entity.ArraySezione;
 import it.synclab.sushilab.entity.Blacklist;
 import it.synclab.sushilab.entity.Code;
+import it.synclab.sushilab.entity.Fasce;
 import it.synclab.sushilab.entity.IdToken;
 import it.synclab.sushilab.entity.InformazioniPiatto;
 import it.synclab.sushilab.entity.Ingredienti;
+import it.synclab.sushilab.entity.ListaOrdineMerge;
+import it.synclab.sushilab.entity.ListaOrdini;
 import it.synclab.sushilab.entity.Menu;
 import it.synclab.sushilab.entity.Ordine;
 import it.synclab.sushilab.entity.OrdineDettaglio;
+import it.synclab.sushilab.entity.OrdineMerge;
 import it.synclab.sushilab.entity.Piatto;
 import it.synclab.sushilab.entity.PiattoUpload;
+import it.synclab.sushilab.entity.Preferiti;
 import it.synclab.sushilab.entity.PiattoPreview;
 import it.synclab.sushilab.entity.Session;
+import it.synclab.sushilab.entity.Sezione;
+import it.synclab.sushilab.entity.SezionePreview;
 import it.synclab.sushilab.entity.InformazioniPiatto;
 import it.synclab.sushilab.repository.BlacklistRepository;
 import it.synclab.sushilab.repository.ClientRepository;
@@ -116,7 +124,7 @@ public class ClientService{
                 .filteredBy(CharacterPredicates.LETTERS, CharacterPredicates.DIGITS)
                 .build();
         String s = randomStringGenerator.generate(Constants.codeLength);
-        codeRepository.save(new Code(email, s));
+        codeRepository.save(new Code(email, s, false));
         return true;
     }
 
@@ -292,7 +300,8 @@ public class ClientService{
         if(lista_2 == null) return null;
         List<OrdineDettaglio> lista_dettaglio = new ArrayList<>();
         for(int i = 0; i < lista_2.size(); i++){
-            PiattoUpload piattoUpload = null;
+            Piatto piatto = ottienPiatto(idPersona, lista_2.get(i).getIdPiatto(), false);
+            /*PiattoUpload piattoUpload = null;
             if(piattoUploadRepository.existsById(lista_2.get(i).getIdPiatto()))
                 piattoUpload = piattoUploadRepository.getReferenceById(lista_2.get(i).getIdPiatto());
             PiattoPreview piattoPreview = null;
@@ -314,14 +323,14 @@ public class ClientService{
                 }
             }
             if(divisore != 0)
-                piatto.setValutazioneMedia(valutazione_tot/divisore);
+                piatto.setValutazioneMedia(valutazione_tot/divisore);*/
             //Merge degli ordini
             int count = 0;
             List<String> note = new ArrayList<>();
             for(int j = 0; j < lista_2.size(); j++){
                 if(lista_2.get(i).getIdPiatto() == lista_2.get(j).getIdPiatto()){
                     count++;
-                    note.add(lista_2.get(j).getNote());
+                    if(lista_2.get(j).getNote() != null) note.add(lista_2.get(j).getNote());
                 }
             }
             boolean insert = true;
@@ -427,6 +436,141 @@ public class ClientService{
         blacklist.setUtente(idTokenRepository.getReferenceById(idPersona).getCliente());
         blacklist.setIngredienti(ingredienti.getIngredienti());
         blacklistRepository.save(blacklist);
+        return true;
+    }
+
+    public ArraySezione ottieniMenu(int idMenu, String idPersona){
+        if(!menuRepository.existsById(idMenu)) return null;
+        if(!idTokenRepository.existsById(idPersona)) return null;
+        List<SezionePreview> list_preview = menuRepository.findById(idMenu).get().getMenu();
+        List<Sezione> list_sezione = new ArrayList<>();
+        if(list_preview == null) return null;
+        for(int i = 0; i < list_preview.size(); i++){
+            Sezione sezione;
+            List<Piatto> piatti = new ArrayList<>();
+            for(int j = 0; j < list_preview.get(i).getPiatti().size(); j++){
+                Piatto piatto = ottienPiatto(idPersona, list_preview.get(i).getPiatti().get(j).getId(), true);
+                if(piatto != null) piatti.add(piatto);
+            }
+            sezione = new Sezione(list_preview.get(i).getNome(), piatti);
+            list_sezione.add(sezione);
+        }
+        ArraySezione arraySezione = new ArraySezione(list_sezione);
+        return arraySezione;
+    }
+
+    public Fasce ottieniFasce(int idMenu){
+        if(!menuRepository.existsById(idMenu)) return null;
+        if(menuRepository.getReferenceById(idMenu).getFasce() == null) return null;
+        Fasce fasce = new Fasce(menuRepository.getReferenceById(idMenu).getFasce());
+        return fasce;
+    }
+
+    public Preferiti ottieniListaPreferiti(int idMenu, String idPersona){
+        if(!menuRepository.existsById(idMenu)) return null;
+        if(!idTokenRepository.existsById(idPersona)) return null;
+        Preferiti preferiti;
+        List<Piatto> piatti = new ArrayList<>();
+        Menu menu = menuRepository.getReferenceById(idMenu);
+        for(int i = 0; i < menu.getMenu().size(); i++){
+            for(int j = 0; j < menu.getMenu().get(i).getPiatti().size(); j++){
+                Piatto piatto = ottienPiatto(idPersona, menu.getMenu().get(i).getPiatti().get(j).getId(), false);
+                if(piatto.isPreferito()) piatti.add(piatto);
+            }
+        }
+        preferiti = new Preferiti(piatti);
+        return preferiti;
+    }
+
+    public Utente ottieniUtente(String idPersona){
+        if(!idTokenRepository.existsById(idPersona)) return null;
+        Utente utente = idTokenRepository.getReferenceById(idPersona).getCliente();
+        return utente;
+    }
+
+    public boolean reimpostaPassword(String email, String newpass){
+        if(!codeRepository.findById(email).get().isVerify()) return false;
+        clientRepository.getReferenceById(email).setPassword(newpass);
+        codeRepository.deleteById(email);
+        return true;
+    }
+
+    private Piatto ottienPiatto(String idPersona, int idPiatto, boolean filtered){
+        Piatto piatto;
+        PiattoPreview piattoPreview = piattoPreviewRepository.findById(idPiatto).get();
+        PiattoUpload piattoUpload = piattoUploadRepository.findById(idPiatto).get();
+        if(filtered){
+            List<Blacklist> allergeni = blacklistRepository.findAll();
+            for(int i = 0; i < allergeni.size(); i++){
+                if(allergeni.get(i).getUtente() == idTokenRepository.findById(idPersona).get().getCliente()){
+                    for(int j = 0; j < allergeni.get(i).getIngredienti().size(); j++){
+                        for(int k = 0; k < piattoUpload.getAllergeni().size(); k++){
+                            if(allergeni.get(i).getIngredienti().get(j).compareTo(piattoUpload.getAllergeni().get(k)) == 0) return null;
+                        }
+                    }
+                }
+            }
+        }
+        if(piattoPreview == null || piattoUpload == null) return null;
+        List<InformazioniPiatto> list = informazioniPiattoRepository.findAll();
+        int valutazione_media = 0;
+        int valutazione_utente = 0;
+        int valutazione_tot = 0;
+        int divisore = 0;
+        boolean preferito = false;
+        for(int j = 0; j < list.size(); j++){
+            if(list.get(j).getPiatto().getId() == idPiatto){
+                divisore++;
+                valutazione_tot += list.get(j).getValutazione();
+                if(list.get(j).getUtente().getIdPersona().getIdToken().compareTo(idPersona)==0){
+                    preferito = list.get(j).isPreferito();
+                    valutazione_utente = list.get(j).getValutazione();
+                }
+            }
+        }
+        if(divisore != 0) valutazione_media = valutazione_tot/divisore;
+        boolean popolare = false;
+        if(valutazione_media > 4) popolare = true;
+
+        piatto = new Piatto(
+            piattoPreview.getId(), 
+            piattoUpload.getNumero(), 
+            piattoUpload.getVariante(), 
+            piattoPreview.getNome(), 
+            piattoUpload.getPrezzo(), 
+            piattoUpload.getAllergeni(), 
+            piattoUpload.getIngredienti(), 
+            piattoPreview.getLimite(), 
+            valutazione_media, 
+            valutazione_utente, 
+            preferito, 
+            "ultimoOrdine", 
+            popolare, 
+            piattoPreview.getConsigliato(), 
+            piattoUpload.getImmagine(), 
+            piattoUpload.getAlt()
+            );
+        return piatto;
+    }
+
+
+    public boolean mergeTavolo(String idTavolo, ListaOrdineMerge body) {
+        if (!sessionRepository.existsById(idTavolo)) return false;
+        for(int i = 0; i < body.getOrdini().size(); i++){
+            if(!idTokenRepository.existsById(body.getOrdini().get(i).getIdPersona())) return false;
+        }
+        
+        for(int i = 0; i < body.getOrdini().size(); i++){
+            OrdineMerge ordine = body.getOrdini().get(i);
+            List<Ordine> ordini = new ArrayList<>();
+            Ordine e = new Ordine();
+            e.setCount(ordine.getCount());
+            e.setIdPiatto(ordine.getIdPiatto());
+            e.setNote(ordine.getNote());
+            e.setIdPersona(idTokenRepository.getReferenceById(ordine.getIdPersona()));
+            ordini.add(e);
+            inserisciOrdini(ordini, ordine.getIdPersona(), idTavolo);
+        }
         return true;
     }
 

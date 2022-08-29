@@ -1,6 +1,7 @@
 package it.synclab.sushilab.controller;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONObject;
@@ -17,18 +18,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 
-import it.synclab.sushilab.entity.IdToken;
 import it.synclab.sushilab.entity.InArrivo;
 import it.synclab.sushilab.entity.ListaOrdini;
 import it.synclab.sushilab.entity.Menu;
+import it.synclab.sushilab.entity.MenuCompatto;
+import it.synclab.sushilab.entity.MenuCompattoSessione;
 import it.synclab.sushilab.entity.Ordine;
 import it.synclab.sushilab.entity.OrdineDettaglio;
-import it.synclab.sushilab.entity.Session;
-import it.synclab.sushilab.entity.Utente;
 import it.synclab.sushilab.service.ClientService;
 import it.synclab.sushilab.utility.Utility;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import it.synclab.sushilab.entity.ListaOrdineDettaglio;
 import it.synclab.sushilab.entity.ListaOrdineDettaglioTavolo;
+import it.synclab.sushilab.entity.ListaOrdineMerge;
 
 @RestController
 @RequestMapping(value = "tavolo")
@@ -38,7 +42,6 @@ public class TavoloController {
 
 
     /*  Crea Sessione POST http:/localhost:3000/tavolo   */
-
     @PostMapping(path = "persona/{idPersona}" ,produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> creaSessione(@PathVariable String idPersona){
         //Generate random value
@@ -67,20 +70,24 @@ public class TavoloController {
             return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
         //Ricevo il menù dell'orario giusto
         Menu menu = clienteService.riceviMenu();
+        MenuCompatto menuCompatto = new MenuCompatto();
         if(menu == null) 
             return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
-        //Elimino ridondanze e ricorsione infinita
-        for(int i = 0; i < menu.getFasce().size(); i++){
-            menu.getFasce().get(i).setMenu(null);
-        }
+        menuCompatto.setId(menu.getId());
+        menuCompatto.setNome(menu.getNome());
+        List<Integer> piatti = new ArrayList<>();
         for(int i = 0; i < menu.getMenu().size(); i++){
-            menu.getMenu().get(i).setMenu(null);
-            for (int j = 0; j < menu.getMenu().get(i).getPiatti().size(); j++){
-                menu.getMenu().get(i).getPiatti().get(j).setSezionePreview(null);
+            for(int j = 0; j < menu.getMenu().get(i).getPiatti().size(); j++){
+                piatti.add(menu.getMenu().get(i).getPiatti().get(j).getId());
             }
         }
-        JSONObject body = new JSONObject(menu);
-        return new ResponseEntity<String>(body.toString(), HttpStatus.OK);
+        menuCompatto.setPiatti(piatti);
+
+        MenuCompattoSessione menuRisposta = new MenuCompattoSessione(menuCompatto);
+        System.out.println(menuRisposta);
+        JSONObject json = new JSONObject(menuRisposta);
+        System.out.println(json);
+        return new ResponseEntity<String>(json.toString(), HttpStatus.OK);
     }
     /*--------------------------------------------------- */
 
@@ -105,8 +112,16 @@ public class TavoloController {
         System.out.println(listaOrdineDettaglio);
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
+    
+    /* Modifica gli ordini di una persona POST http://localhost:3000/tavolo/{idTavolo}/persona/{idPersona} */
+    @PostMapping(path = "{idTavolo}/persona/{idPersona}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> modificaOrdiniPersona(@PathVariable String idTavolo, @PathVariable String idPersona, @RequestBody ListaOrdini ordini){
+        //Inserisci ordini con tutte le verifiche
+        if(!clienteService.inserisciOrdini(ordini.getOrdini(), idPersona, idTavolo)) return new ResponseEntity<>(HttpStatus.METHOD_NOT_ALLOWED);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
-    /* Ottieni ordini di una tavolo Get http://localhost:3000/tavolo/{idTavolo}/persona/{idPersona}/ordini */
+    /* Ottieni ordini di un tavolo Get http://localhost:3000/tavolo/{idTavolo}/persona/{idPersona}/ordini */
     @GetMapping(path = "{idTavolo}/persona/{idPersona}/ordini", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> ottieniOrdiniTavolo(@PathVariable String idTavolo, @PathVariable String idPersona){
         List<OrdineDettaglio> ordini = clienteService.ottieniOrdiniTavolo(idPersona, idTavolo);
@@ -116,23 +131,8 @@ public class TavoloController {
         //System.out.println(listaOrdineDettaglio);
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
-
-    /* Modifica ordine di una persona POST http://localhost:3000/tavolo/{idTavolo}/persona/{idPersona} */
-    @PostMapping(path = "{idTavolo}/persona/{idPersona}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> modificaOrdiniPersona(@PathVariable String idTavolo, @PathVariable String idPersona, @RequestBody ListaOrdini ordini){
-        //Inserisci ordini con tutte le verifiche
-        if(!clienteService.inserisciOrdini(ordini.getOrdini(), idPersona, idTavolo)) return new ResponseEntity<>(HttpStatus.METHOD_NOT_ALLOWED);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    /* Sposta gli ordini a in arrivo POST http://localhost:3000/tavolo/{idTavolo}/inarrivo */
-    @PostMapping(path = "{idTavolo}/inarrivo")
-    public ResponseEntity<String> spostaGliOrdiniInArrivo(@PathVariable String idTavolo){
-        if(!clienteService.spostaGliOrdiniInArrivo(idTavolo)) return new ResponseEntity<>(HttpStatus.METHOD_NOT_ALLOWED);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    /* Ottieni gli ordini in arrivo Get http://localhost:3000/tavolo/{idTavolo}/inarrivo */
+    
+    /* Ottieni gli ordini in arrivo Get http://localhost:3000/tavolo/{idTavolo}/inarrivo/{idPersona} */
     @GetMapping(path = "{idTavolo}/inarrivo/{idPersona}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> ottieniGliOrdiniInArrivo(@PathVariable String idTavolo, @PathVariable String idPersona){
         List<OrdineDettaglio> list = clienteService.ottieniGliOrdiniInArrivo(idTavolo, idPersona);
@@ -141,6 +141,20 @@ public class TavoloController {
         JSONObject json = new JSONObject(inArrivo);
         return new ResponseEntity<>(json.toString(), HttpStatus.OK);
     }
-       
+    
+    /* Sposta gli ordini a in arrivo POST http://localhost:3000/tavolo/{idTavolo}/inarrivo */
+    @PostMapping(path = "{idTavolo}/inarrivo")
+    public ResponseEntity<String> spostaGliOrdiniInArrivo(@PathVariable String idTavolo){
+        if(!clienteService.spostaGliOrdiniInArrivo(idTavolo)) return new ResponseEntity<>(HttpStatus.METHOD_NOT_ALLOWED);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    /* Mergia 2 sessioni di tavolo */
+    @PostMapping(path = "merge/{idTavolo}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> mergeTavolo(@PathVariable String idTavolo, @RequestBody ListaOrdineMerge body){
+        if(!clienteService.mergeTavolo(idTavolo, body)) return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
 
 }

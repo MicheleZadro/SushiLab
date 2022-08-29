@@ -7,7 +7,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -19,6 +20,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties({"id"})
 public class FasciaOraria {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,6 +31,8 @@ public class FasciaOraria {
     private int oraInizio;
 
     private int oraFine;
+
+
 
     @ManyToOne
     @JoinColumn(name = "menu", referencedColumnName = "id")
@@ -42,7 +46,8 @@ public class FasciaOraria {
     public Menu getMenu() {
         return menu;
     }
-
-    
+    public int getId(){
+        return id;
+    }
     
 }

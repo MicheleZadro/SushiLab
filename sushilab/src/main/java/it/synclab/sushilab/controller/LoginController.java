@@ -23,6 +23,7 @@ import it.synclab.sushilab.utility.Utility;
 public class LoginController {
     @Autowired
     private ClientService clienteService;
+    /*  Esegui il login POST http://localhost:3000/login */
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> eseguiLogin(@RequestBody Utente utente){
         if(clienteService.login(utente)) {
